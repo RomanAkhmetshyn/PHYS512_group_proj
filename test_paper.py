@@ -12,15 +12,28 @@ import matplotlib as mpl
 mpl.rcParams['figure.dpi'] = 300
 
 
-d1 = np.linspace(5, 0, 100)
-d2 = np.linspace(1, 5, 100)
+# d1 = np.linspace(5, 0, 100)
+# d2 = np.linspace(1, 5, 100)
 
-d = np.hstack([d1, d2])
+# d = np.hstack([d1, d2])
+
+M_s = 1.9885*1e30
+m_p = M_s * 0.001
+G = 6.67 * 1e-11
+T = 10 * (24*60*60)
+a = (G*(M_s+m_p)*T**2/(4*np.pi**2))**(1/3)
+
+t = np.linspace(0, 20, 1000)*60*60
+
+n = 2*np.pi / T
+t_c = 10*60*60
+
 
 r_s = 1
 r_p = 0.01
 
-Z = d / r_s
+# Z = d / r_s
+Z = a/(696000000*r_s)*np.sqrt((np.sin(n*(t-t_c)))**2+(np.sin(n*(t-t_c)))**2)
 p = r_p / r_s
 
 l = np.zeros(len(Z))
@@ -48,4 +61,5 @@ for i, z in enumerate(Z):
 
 F = 1 - l
 
-plt.plot(F)
+plt.plot(t/60/60, F)
+plt.show()
