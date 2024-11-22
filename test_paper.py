@@ -22,8 +22,10 @@ m_p = M_s * 0.001
 G = 6.67 * 1e-11
 T = 10 * (24*60*60)
 a = (G*(M_s+m_p)*T**2/(4*np.pi**2))**(1/3)
+e = 0
+inc = 0
 
-t = np.linspace(0, 20, 1000)*60*60
+time = np.linspace(0, 20, 1000)*60*60
 
 n = 2*np.pi / T
 t_c = 10*60*60
@@ -33,7 +35,8 @@ r_s = 1
 r_p = 0.01
 
 # Z = d / r_s
-Z = a/(696000000*r_s)*np.sqrt((np.sin(n*(t-t_c)))**2+(np.sin(n*(t-t_c)))**2)
+Z = a/(696000000*r_s)*np.sqrt((np.sin(n*(time-t_c)))
+                              ** 2+(np.sin(n*(time-t_c)))**2)
 p = r_p / r_s
 
 l = np.zeros(len(Z))
@@ -47,19 +50,37 @@ def k0(p, z):
     return np.arccos((p**2+z**2-1)/(2*p*z))
 
 
-for i, z in enumerate(Z):
+# for i, z in enumerate(Z):
 
-    if 1+p < z:
-        l[i] = 0
-    elif abs(1-p) < z <= 1+p:
-        sqrt = (4*z**2-(1+z**2-p**2)**2)/4
-        l[i] = 1/np.pi*(p**2*k0(p, z)+k1(p, z)-np.sqrt(sqrt))
-    elif z <= 1-p:
-        l[i] = p**2
-    elif z <= p-1:
-        l[i] = 1
+#     if 1+p < z:
+#         l[i] = 0
+#     elif abs(1-p) < z <= 1+p:
+#         sqrt = (4*z**2-(1+z**2-p**2)**2)/4
+#         l[i] = 1/np.pi*(p**2*k0(p, z)+k1(p, z)-np.sqrt(sqrt))
+#     elif z <= 1-p:
+#         l[i] = p**2
+#     elif z <= p-1:
+#         l[i] = 1
+# F = 1 - l
 
-F = 1 - l
+# b = a*np.cos(inc)/(696000000*r_s)
+b = 0
+tau0 = (696000000*r_s)/(a*n)
 
-plt.plot(t/60/60, F)
+# delta = p**2
+u = 0.5
+delta = p**2 * (9-8*(np.sqrt(1-b**2)-1)*u)/(9-8*u)
+TT = 2*tau0*np.sqrt(1-b**2)
+tau = 2*tau0*p/np.sqrt(1-b**2)
+
+F = np.zeros(len(time))
+for i, t in enumerate(time):
+    if abs(t-t_c) <= TT/2-tau/2:
+        F[i] = 1 - delta
+    elif TT/2-tau/2 < abs(t-t_c) < TT/2+tau/2:
+        F[i] = 1-delta+(delta/tau)*(abs(t-t_c)-TT/2+tau/2)
+    elif abs(t-t_c) >= TT/2+tau/2:
+        F[i] = 1
+
+plt.plot(time/60/60, F)
 plt.show()
