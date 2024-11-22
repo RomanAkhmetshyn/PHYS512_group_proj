@@ -8,20 +8,7 @@ starry.config.quiet = True
 
 import numpy as np
 
-# Define the number of rows and columns
-rows = 1
-cols = (5 + 1)**2
 
-# Use numpy functions to initialize the 2D array
-ylm = np.zeros((rows, cols))  # Start with all ones
-# ylm[:, :] = np.random.normal(loc=0, scale=0.05, size=(rows, cols))
-
-# ylm[:,0] = 1
-# plt.plot(ylm)
-# plt.show()
-
-# fig, ax = plt.subplots(1, figsize=(12, 5))
-# for Ys in ylm:
 ydeg = 1
 
 map = starry.Map(ydeg=ydeg)
@@ -47,7 +34,7 @@ B = dict(
     # inc=-39,  # inclination in degrees
     inc=90,
     # amp=0.0165,  # amplitude (a value prop. to luminosity)
-    amp=0.001,  # amplitude (a value prop. to luminosity)
+    amp=0,  # amplitude (a value prop. to luminosity)
     r=0.1,  #  radius in R_sun
     m=0.001,  #  mass in M_sun
     porb=10,  # orbital period in days
@@ -98,7 +85,7 @@ rots = 10
 
 pred = [10+rot*10*24 for rot in range(0,rots)]
 
-amplitude = 0.5  # Amplitude of TTV in hours
+amplitude = 0.2  # Amplitude of TTV in hours
 period = 8  # Period of TTV in number of transits
 TTV = amplitude * np.sin(2 * np.pi * np.arange(rots) / period)
 
@@ -114,7 +101,7 @@ for rot in range(rots):
     t = np.linspace(5 + rot * 10 * 24, 15 + rot * 10 * 24, 1000)
     
     # Simulate true flux
-    flux_true = sys.flux((t - TTV[rot]) / 24) - 0.001
+    flux_true = sys.flux((t - TTV[rot]) / 24) 
     
     # Add noise to flux
     sigma = 1.6e-4
@@ -125,23 +112,40 @@ for rot in range(rots):
     full_time.append(t)
     
     # Plot the results for each rotation
-    fig, ax = plt.subplots(1, figsize=(12, 5))  
-    ax.vlines(pred[rot], 0.989, 1.005, linestyle='--', color='r', label="TTV mid-transit")
-    ax.vlines(pred[rot]+TTV[rot], 0.989, 1.005, linestyle='--', color='g', label="TTV mid-transit")
-    ax.plot(t, flux, "k.", alpha=0.3, ms=2, label="Observed Flux")
-    ax.plot(t, flux_true, lw=1, label="True Flux")
-    ax.set_xlabel("Time [hours]", fontsize=16)
-    ax.set_ylabel("Normalized Flux", fontsize=16)
-    ax.legend()
-    plt.show()
+    # fig, ax = plt.subplots(1, figsize=(12, 5))  
+    # ax.vlines(pred[rot], 0.989, 1.005, linestyle='--', color='r', label="TTV mid-transit")
+    # ax.vlines(pred[rot]+TTV[rot], 0.989, 1.005, linestyle='--', color='g', label="TTV mid-transit")
+    # ax.plot(t, flux, "k.", alpha=0.3, ms=2, label="Observed Flux")
+    # ax.plot(t, flux_true, lw=1, label="True Flux")
+    # ax.set_xlabel("Time [hours]", fontsize=16)
+    # ax.set_ylabel("Normalized Flux", fontsize=16)
+    # ax.legend()
+    # plt.show()
 
 # Stack the arrays into one column of values
-full_flux = np.hstack(full_flux)
-full_time = np.hstack(full_time)
+full_flux = np.vstack(full_flux)
+full_time = np.vstack(full_time)
 
 
 
-# np.savetxt('lightcurve.txt', np.column_stack([full_time, full_flux]))
-# np.savetxt('real_lightcurve.txt', np.column_stack([full_time, flux_true]))
-# Save the result
-# np.savez("eb.npz", A=A, B=B, t=full_time / 24, flux=full_flux, sigma=sigma)
+np.savetxt('lightcurve.txt', full_flux)
+np.savetxt('times.txt', full_time)
+
+#%%
+    
+offset_step = 0.016 # Adjust the step size of the offset as needed
+
+# Create the plot
+plt.figure(figsize=(12, 8))
+for i, flux in enumerate(full_flux):
+    plt.plot(full_time[0]-10, flux + i * offset_step, 'k.', ms=2)  # Add offset
+
+plt.vlines(0, 0.98, 1.15, linestyle='--', color='r', label="expected mid-transit")
+# Add labels and legend
+
+plt.ylim(0.98, 1.147)
+plt.xlabel("Time [hours]", fontsize=14)
+plt.ylabel("Normalized Flux + Offset", fontsize=14)
+plt.legend(fontsize=10, loc='upper right', ncol=2)  # Adjust legend position as needed
+plt.show()
+
