@@ -112,15 +112,15 @@ for rot in range(rots):
     full_time.append(t)
     
     # Plot the results for each rotation
-    # fig, ax = plt.subplots(1, figsize=(12, 5))  
-    # ax.vlines(pred[rot], 0.989, 1.005, linestyle='--', color='r', label="TTV mid-transit")
-    # ax.vlines(pred[rot]+TTV[rot], 0.989, 1.005, linestyle='--', color='g', label="TTV mid-transit")
-    # ax.plot(t, flux, "k.", alpha=0.3, ms=2, label="Observed Flux")
-    # ax.plot(t, flux_true, lw=1, label="True Flux")
-    # ax.set_xlabel("Time [hours]", fontsize=16)
-    # ax.set_ylabel("Normalized Flux", fontsize=16)
-    # ax.legend()
-    # plt.show()
+    fig, ax = plt.subplots(1, figsize=(12, 5))  
+    ax.vlines(pred[rot], 0.989, 1.005, linestyle='--', color='r', label="TTV mid-transit")
+    ax.vlines(pred[rot]+TTV[rot], 0.989, 1.005, linestyle='--', color='g', label="TTV mid-transit")
+    ax.plot(t, flux, "k.", alpha=0.3, ms=2, label="Observed Flux")
+    ax.plot(t, flux_true, lw=1, label="True Flux")
+    ax.set_xlabel("Time [hours]", fontsize=16)
+    ax.set_ylabel("Normalized Flux", fontsize=16)
+    ax.legend()
+    plt.show()
 
 # Stack the arrays into one column of values
 full_flux = np.vstack(full_flux)
