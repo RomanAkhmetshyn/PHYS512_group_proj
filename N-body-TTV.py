@@ -83,15 +83,24 @@ vy2 = vy2 / 1.8
 
 
 # Simulation parameters
-dt = 0.01  # Time step in days
+dt = 0.001  # Time step in days
 tmax = 500  # Total simulation time in days
-dprint = 500  # Number of sub-steps for smooth plotting
-dt = dt / dprint
+dprint = 365 * 2  # Number of sub-steps for smooth plotting
+# dt = dt / dprint
 
 # Arrays for tracking positions and detecting transits
+num_steps = len(np.arange(0, tmax, dt)) + 1
 xs = np.zeros(len(np.arange(0, tmax, dt)) + 1)
 xs[0] = x1
 ts = []  # Time of transits
+
+positions_0 = np.zeros((num_steps, 2))  # Particle 0 (x, y)
+positions_1 = np.zeros((num_steps, 2))  # Particle 1 (x, y)
+positions_2 = np.zeros((num_steps, 2))  # Particle 2 (x, y)
+
+positions_0[0] = [x0, y0]
+positions_1[0] = [x1, y1]
+positions_2[0] = [x2, y2]
 
 # Simulation loop
 plt.figure(figsize=(8, 8))
@@ -148,12 +157,16 @@ for i, t in enumerate(np.arange(0, tmax, dt)):
 
     xs[i + 1] = x1
 
+    positions_0[i + 1] = [x0, y0]
+    positions_1[i + 1] = [x1, y1]
+    positions_2[i + 1] = [x2, y2]
+
     # Detect transits
     if y1 < 0 and xs[i] < 0 and xs[i + 1] > 0:
         ts.append(t)
 
     # Plotting
-    if np.abs(t % 0.01) < 1e-6:
+    if np.abs(t % 0.1) < 1e-6:
         plt.plot(x0, y0, 'r.', markersize=1)
         plt.plot(x1, y1, 'b.', markersize=0.5)
         plt.plot(x2, y2, 'g.', markersize=0.5)
@@ -170,6 +183,10 @@ for i, t in enumerate(np.arange(0, tmax, dt)):
 
 
 plt.show()
+
+np.save("positions_0.npy", positions_0)
+np.save("positions_1.npy", positions_1)
+np.save("positions_2.npy", positions_2)
 # %%
 # Post-analysis: Observed minus Calculated (O-C) analysis
 ts = np.array(ts)
@@ -186,3 +203,19 @@ plt.show()
 
 # plt.plot(periods)
 # plt.show()
+
+# %%
+
+
+# Visualization (optional)
+plt.figure(figsize=(8, 8))
+plt.plot(positions_0[:, 0], positions_0[:, 1], label="Particle 0")
+plt.plot(positions_1[:, 0], positions_1[:, 1], label="Particle 1")
+plt.plot(positions_2[:, 0], positions_2[:, 1], label="Particle 2")
+plt.xlabel("x (AU)")
+plt.ylabel("y (AU)")
+plt.ylim(-0.8, 0.8)
+plt.xlim(-0.8, 0.8)
+plt.legend()
+plt.title("Trajectories of Particles")
+plt.show()
