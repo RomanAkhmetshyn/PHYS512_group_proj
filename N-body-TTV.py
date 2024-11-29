@@ -14,7 +14,7 @@ G = G_SI / (AU**3 / (Mjup * (day)**2))
 
 
 # Function to calculate initial conditions
-def kepler_to_cartesian(T, e, omega, true_anomaly, G, M_central):
+def kepler_to_cartesian(T, e, omega, true_anomaly, G, M_central, M_orbiting):
     """
     Convert Keplerian elements to Cartesian coordinates and velocities.
 
@@ -34,8 +34,10 @@ def kepler_to_cartesian(T, e, omega, true_anomaly, G, M_central):
     """
     # Calculate semi-major axis from period using Kepler's Third Law
 
-    a = (G * M_central * (T / (2 * np.pi))**2)**(1 / 3)
+    a = (G * (M_central + M_orbiting) * (T / (2 * np.pi))**2)**(1 / 3)
     print(a)
+
+    M_total = M_central + M_orbiting
 
     # Radial distance for true anomaly
     r = a * (1 - e**2) / (1 + e * np.cos(true_anomaly))
@@ -46,6 +48,8 @@ def kepler_to_cartesian(T, e, omega, true_anomaly, G, M_central):
 
     # Orbital velocity magnitude (Vis-viva equation)
     v = np.sqrt(G * M_central * (2 / r - 1 / a))
+    # mu = G * (M_central+M_orbiting)
+    # v = np.sqrt(mu * (2/r - 1/a))
 
     # Velocity direction is perpendicular to radius vector
     vx_orbit = -v * np.sin(true_anomaly)
@@ -71,13 +75,16 @@ m0 = 1000.0  # Mass of particle 0
 m1 = 1.0  # Mass of particle 1
 m2 = 3.0  # Mass of particle 2
 
-x1, y1, vx1, vy1 = kepler_to_cartesian(10, 0.0, 0.0, 0.0, G, m0)
-x2, y2, vx2, vy2 = kepler_to_cartesian(60, 0.0, 0.0, np.pi, G, m0)
+x1, y1, vx1, vy1 = kepler_to_cartesian(10, 0.0, 0.0, 0.0, G, m0, m1)
+x2, y2, vx2, vy2 = kepler_to_cartesian(160, 0.0, 0.0, np.pi, G, m0, m2)
+
+vx2 = vx2 / 1.8
+vy2 = vy2 / 1.8
 
 
 # Simulation parameters
 dt = 0.01  # Time step in days
-tmax = 60  # Total simulation time in days
+tmax = 500  # Total simulation time in days
 dprint = 500  # Number of sub-steps for smooth plotting
 dt = dt / dprint
 
@@ -156,6 +163,12 @@ for i, t in enumerate(np.arange(0, tmax, dt)):
         plt.xlim(-0.8, 0.8)
         # plt.pause(0.001)
 
+    # KE = 0.5 * (m0 * (vx0**2 + vy0**2) + m1 *
+    #             (vx1**2 + vy1**2) + m2 * (vx2**2 + vy2**2))
+    # PE = -G * (m0 * m1 / r01 + m0 * m2 / r02 + m1 * m2 / r12)
+    # print(KE + PE)
+
+
 plt.show()
 # %%
 # Post-analysis: Observed minus Calculated (O-C) analysis
@@ -165,9 +178,9 @@ expected = [ts[0] + np.mean(periods) * n for n in range(len(ts))]
 
 OC = ts - expected
 
-plt.plot(ts, OC)
-plt.xlabel("Transit Index")
-plt.ylabel("O-C (years)")
+plt.plot(ts, OC*24*60)
+plt.xlabel("days")
+plt.ylabel("O-C (minutes)")
 plt.title("Observed Minus Calculated Analysis")
 plt.show()
 
