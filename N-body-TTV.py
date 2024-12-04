@@ -25,6 +25,7 @@ def kepler_to_cartesian(T, e, omega, true_anomaly, G, M_central, M_orbiting):
         true_anomaly (float): True anomaly in radians.
         G (float): Gravitational constant in AU^3 / Mjup / day^2.
         M_central (float): Mass of the central body in Mjup.
+        M_orbiting (float): Mass of the orbiting body in Mjup.
 
     Returns:
         x (float): Initial x position in AU.
@@ -32,30 +33,29 @@ def kepler_to_cartesian(T, e, omega, true_anomaly, G, M_central, M_orbiting):
         vx (float): Initial x velocity in AU/day.
         vy (float): Initial y velocity in AU/day.
     """
-    # Calculate semi-major axis from period using Kepler's Third Law
-
-    a = (G * (M_central + M_orbiting) * (T / (2 * np.pi))**2)**(1 / 3)
-    print(a)
-
+    # Total mass
     M_total = M_central + M_orbiting
 
-    # Radial distance for true anomaly
+    # Semi-major axis from period (Kepler's Third Law)
+    a = (G * M_total * (T / (2 * np.pi))**2)**(1 / 3)
+
+    # Radial distance for the given true anomaly
     r = a * (1 - e**2) / (1 + e * np.cos(true_anomaly))
 
-    # Orbital positions in the orbital plane
+    # Radial and tangential velocities
+    v_r = np.sqrt(G * M_total / a) * e * np.sin(true_anomaly) / (1 - e**2)**0.5
+    v_theta = np.sqrt(G * M_total / a) * \
+        (1 + e * np.cos(true_anomaly)) / (1 - e**2)**0.5
+
+    # Cartesian position in orbital plane
     x_orbit = r * np.cos(true_anomaly)
     y_orbit = r * np.sin(true_anomaly)
 
-    # Orbital velocity magnitude (Vis-viva equation)
-    v = np.sqrt(G * M_central * (2 / r - 1 / a))
-    # mu = G * (M_central+M_orbiting)
-    # v = np.sqrt(mu * (2/r - 1/a))
+    # Cartesian velocity in orbital plane
+    vx_orbit = v_r * np.cos(true_anomaly) - v_theta * np.sin(true_anomaly)
+    vy_orbit = v_r * np.sin(true_anomaly) + v_theta * np.cos(true_anomaly)
 
-    # Velocity direction is perpendicular to radius vector
-    vx_orbit = -v * np.sin(true_anomaly)
-    vy_orbit = v * (e + np.cos(true_anomaly)) / (1 + e * np.cos(true_anomaly))
-
-    # Rotate by argument of periapsis omega
+    # Rotate position and velocity to account for argument of periapsis
     cos_omega = np.cos(omega)
     sin_omega = np.sin(omega)
     x = cos_omega * x_orbit - sin_omega * y_orbit
@@ -73,13 +73,13 @@ x0, y0, vx0, vy0 = 0, 0, 0, 0  # Particle 0
 # Masses of the particles (in Mjup)
 m0 = 1000.0  # Mass of particle 0
 m1 = 1.0  # Mass of particle 1
-m2 = 3.0  # Mass of particle 2
+m2 = 1.0  # Mass of particle 2
 
 x1, y1, vx1, vy1 = kepler_to_cartesian(10, 0.0, 0.0, 0.0, G, m0, m1)
-x2, y2, vx2, vy2 = kepler_to_cartesian(160, 0.0, 0.0, np.pi, G, m0, m2)
+x2, y2, vx2, vy2 = kepler_to_cartesian(160, 0.0, 0, np.pi, G, m0, m2)
 
-vx2 = vx2 / 1.8
-vy2 = vy2 / 1.8
+# vx2 = vx2 / 1.75
+# vy2 = vy2 / 1.75
 
 
 # Simulation parameters
