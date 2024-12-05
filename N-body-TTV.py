@@ -93,7 +93,7 @@ def twoPlanetTTV(m0=1000, m1=1, m2=1,
     x2, y2, vx2, vy2 = kepler_to_cartesian(T2, e2, w2, G, m0)
 
     # Simulation parameters
-    dt = 0.001  # Time step in days
+    dt = 0.0001  # Time step in days
     tmax = T1*Ntransits  # Total simulation time in days
     # dprint = 365 * 2  # Number of sub-steps for smooth plotting
     # dt = dt / dprint
@@ -205,6 +205,7 @@ ts = twoPlanetTTV(m0=1, m1=0.003, m2=1,
 end_time = time.time()
 print(f"Execution time: {end_time - start_time:.6f} seconds")
 periods = np.diff(ts)
+
 expected = [ts[0] + np.mean(periods) * n for n in range(len(ts))]
 
 OC = ts - expected
@@ -219,22 +220,22 @@ plt.show()
 # plt.show()
 
 # %%
-positions_0 = np.load('positions_0.npy')
-positions_1 = np.load('positions_1.npy')
-positions_2 = np.load('positions_2.npy')
+# positions_0 = np.load('positions_0.npy')
+# positions_1 = np.load('positions_1.npy')
+# positions_2 = np.load('positions_2.npy')
 
-# Visualization (optional)
-plt.figure(figsize=(8, 8))
-plt.plot(positions_0[:, 0], positions_0[:, 1], label="Particle 0")
-plt.plot(positions_1[:, 0], positions_1[:, 1], label="Particle 1")
-plt.plot(positions_2[:, 0], positions_2[:, 1], label="Particle 2")
-plt.xlabel("x (AU)")
-plt.ylabel("y (AU)")
-plt.ylim(-1, 1)
-plt.xlim(-1, 1)
-plt.legend()
-plt.title("Trajectories of Particles")
-plt.show()
+# # Visualization (optional)
+# plt.figure(figsize=(8, 8))
+# plt.plot(positions_0[:, 0], positions_0[:, 1], label="Particle 0")
+# plt.plot(positions_1[:, 0], positions_1[:, 1], label="Particle 1")
+# plt.plot(positions_2[:, 0], positions_2[:, 1], label="Particle 2")
+# plt.xlabel("x (AU)")
+# plt.ylabel("y (AU)")
+# plt.ylim(-1, 1)
+# plt.xlim(-1, 1)
+# plt.legend()
+# plt.title("Trajectories of Particles")
+# plt.show()
 
 # %%
 

@@ -89,9 +89,10 @@ amplitude = 0.2  # Amplitude of TTV in hours
 period = 8  # Period of TTV in number of transits
 TTV = amplitude * np.sin(2 * np.pi * np.arange(rots) / period)
 
-plt.plot(np.arange(rots), TTV)
+plt.plot(np.arange(rots), TTV*60)
 plt.show()
 
+np.savetxt('observed_OC(mins).txt', TTV*60)
 
 pred_with_TTV = pred + TTV * 24  # Convert TTV from hours to the same time unit as pred
 
