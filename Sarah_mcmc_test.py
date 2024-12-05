@@ -79,82 +79,80 @@ plt.show()
 # %%
 
 
-def model_lc(pars, t, ld_type):
-    pars = np.array(pars, dtype=float)
-    params = bm.TransitParams()  # object to store transit parameters
-    params.t0 = pars[0]              # mid transit point
-    params.per = pars[1]  # orbital period
-    params.rp = pars[2]  # planet radius (in units of stellar radii)
-    params.a = pars[3]  # semi-major axis (in units of stellar radii)
-    params.inc = pars[4]  # orbital inclination (in degrees)
-    params.ecc = pars[5]  # eccentricity
-    params.w = pars[6]  # longitude of periastron (in degrees)
-    params.u = pars[7:9]  # ld_coeffs        #limb darkening coefficients
-    params.limb_dark = ld_type  # limb darkening model
-    model = bm.TransitModel(params, t)  # initializes model
-    # params_array =
-    light_curve = model.light_curve(params)  # calculates light curve
+# def model_lc(pars, t, ld_type):
+#     pars = np.array(pars, dtype=float)
+#     params = bm.TransitParams()  # object to store transit parameters
+#     params.t0 = pars[0]              # mid transit point
+#     params.per = pars[1]  # orbital period
+#     params.rp = pars[2]  # planet radius (in units of stellar radii)
+#     params.a = pars[3]  # semi-major axis (in units of stellar radii)
+#     params.inc = pars[4]  # orbital inclination (in degrees)
+#     params.ecc = pars[5]  # eccentricity
+#     params.w = pars[6]  # longitude of periastron (in degrees)
+#     params.u = pars[7:9]  # ld_coeffs        #limb darkening coefficients
+#     params.limb_dark = ld_type  # limb darkening model
+#     model = bm.TransitModel(params, t)  # initializes model
+#     # params_array =
+#     light_curve = model.light_curve(params)  # calculates light curve
 
-    return light_curve
+#     return light_curve
 
-# this function computes the gradient of the model w.r.t. the parameters and is used to determine how changes in the parameters affect the predicted spectrum
-
-
-# f' = [f(x+dx)-f(x-dx)]/2dx, dx = step, x = pars
-def num_deriv(model, pars, dx, t, ld_type):
-    grad = np.zeros((len(lc_observed), len(pars)))
-
-    for i in range(len(pars)):
-        plus_step = pars.copy()
-        minus_step = pars.copy()
-        plus_step[i] += dx[i]
-        minus_step[i] -= dx[i]
-        f_plus = model(plus_step, t, ld_type)[:len(lc_observed)]  # f(x+dx)
-        f_minus = model(minus_step, t, ld_type)[:len(lc_observed)]  # f(x-dx)
-        grad[:, i] = (f_plus - f_minus) / (2 * dx[i])
-    return grad
+# # this function computes the gradient of the model w.r.t. the parameters and is used to determine how changes in the parameters affect the predicted spectrum
 
 
-# starting guess [mid-transit point, period (days), r_planet (stellar radii),semi-major axis (stellar radii), inclination (degrees),
-pars = np.asarray([10/24, 10, .1, 19.5, 90, 0, 90, 0.05, 0])
-# eccentricity, longitude of periastron (degrees)]
-ld_type = 'quadratic'
-t = np.loadtxt('times.txt')
-t = t[0]/24
-dx = pars*1e-3 + np.array([0, 0, 0, 0, 0, 0.001, 0, 0, 0.001])
+# # f' = [f(x+dx)-f(x-dx)]/2dx, dx = step, x = pars
+# def num_deriv(model, pars, dx, t, ld_type):
+#     grad = np.zeros((len(lc_observed), len(pars)))
 
-# starry results --> lc_observed; equivalent of true data  ("spec" in the hw)
-lc_observed = np.loadtxt('lightcurve.txt')
-lc_observed = lc_observed[0]
+#     for i in range(len(pars)):
+#         plus_step = pars.copy()
+#         minus_step = pars.copy()
+#         plus_step[i] += dx[i]
+#         minus_step[i] -= dx[i]
+#         f_plus = model(plus_step, t, ld_type)[:len(lc_observed)]  # f(x+dx)
+#         f_minus = model(minus_step, t, ld_type)[:len(lc_observed)]  # f(x-dx)
+#         grad[:, i] = (f_plus - f_minus) / (2 * dx[i])
+#     return grad
 
-sigma = 1.6e-4
-errs = sigma * np.random.randn(len(t))
-Ninv = np.diag(1/errs**2)
 
-for j in range(7):  # trial and error incrementing
-    model_pred = model_lc(pars, t, ld_type)  # predicted spectrum
-    resid_ar = lc_observed - model_pred  # residuals array
-    err = (resid_ar**2).sum()
-    resid = np.matrix(resid_ar).transpose()  # residuals matrix
-    grad = num_deriv(model_lc, pars, dx, t, ld_type)
-    grad = np.matrix(grad)
-    lhs = grad.transpose()@Ninv@grad  # (A_T)(N_inv)(A) # THIS BECOMES A SINGULAR MATRIX
-    cond = np.linalg.cond(lhs)
-    print(f"Condition number of lhs: {cond}")
-    # assert(1 == 0)
-    rhs = grad.transpose()@Ninv@resid
-    dp = np.linalg.inv(lhs)@rhs
+# # starting guess [mid-transit point, period (days), r_planet (stellar radii),semi-major axis (stellar radii), inclination (degrees),
+# pars = np.asarray([10/24, 10, .1, 19.5, 90, 0, 90, 0.05, 0])
+# # eccentricity, longitude of periastron (degrees)]
+# ld_type = 'quadratic'
+# t = np.loadtxt('times.txt')
+# t = t[0]/24
+# dx = pars*1e-3 + np.array([0, 0, 0, 0, 0, 0.001, 0, 0, 0.001])
 
-    for jj in range(len(pars)):
-        pars[jj] = pars[jj]+dp[jj]
+# # starry results --> lc_observed; equivalent of true data  ("spec" in the hw)
+# lc_observed = np.loadtxt('lightcurve.txt')
+# lc_observed = lc_observed[0]
+
+# sigma = 1.6e-4
+# errs = sigma * np.random.randn(len(t))
+# Ninv = np.diag(1/errs**2)
+
+# for j in range(7):  # trial and error incrementing
+#     model_pred = model_lc(pars, t, ld_type)  # predicted spectrum
+#     resid_ar = lc_observed - model_pred  # residuals array
+#     err = (resid_ar**2).sum()
+#     resid = np.matrix(resid_ar).transpose()  # residuals matrix
+#     grad = num_deriv(model_lc, pars, dx, t, ld_type)
+#     grad = np.matrix(grad)
+#     lhs = grad.transpose()@Ninv@grad  # (A_T)(N_inv)(A) # THIS BECOMES A SINGULAR MATRIX
+#     cond = np.linalg.cond(lhs)
+#     print(f"Condition number of lhs: {cond}")
+#     # assert(1 == 0)
+#     rhs = grad.transpose()@Ninv@resid
+#     dp = np.linalg.pinv(lhs)@rhs
+
+#     for jj in range(len(pars)):
+#         pars[jj] = pars[jj]+dp[jj]
 
 #    chisq=np.sum((resid_ar/errs)**2) #measuring the fit of the model
-        # relative to the uncertainties in the data
+# relative to the uncertainties in the data
 # print(chisq)
 
 # %%
-
-# Define the Batman model light curve
 
 
 def model_lc(pars, t, ld_type):
@@ -259,7 +257,7 @@ ld_type = 'quadratic'
 sigma = 1.6e-4
 
 # MCMC parameters
-num_iter = 100000  # Number of iterations
+num_iter = 1000  # Number of iterations
 step_size = 1e-4  # Proposal step size
 
 # Run Metropolis-Hastings sampler
