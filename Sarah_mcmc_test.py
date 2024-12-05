@@ -40,12 +40,12 @@ params = batman.TransitParams()  # object to store transit parameters
 params.t0 = 10/24.             # mid transit point
 params.per = 10.  # orbital period
 params.rp = 0.1  # planet radius (in units of stellar radii)
-params.a = a  # semi-major axis (in units of stellar radii)
+params.a = a/R_s  # semi-major axis (in units of stellar radii)
 params.inc = 90  # orbital inclination (in degrees)
 params.ecc = 0.  # eccentricity
 params.w = 90.  # longitude of periastron (in degrees)
 params.limb_dark = "quadratic"  # limb darkening model
-params.u = [.05, 0]  # limb darkening coefficients
+params.u = [.4, .1]  # limb darkening coefficients
 
 # t = np.linspace(-0.025, 0.025, 1000)   #times at which to calculate light curve
 t = np.loadtxt('times.txt')

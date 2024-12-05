@@ -104,7 +104,7 @@ for rot in range(rots):
     flux_true = sys.flux((t - TTV[rot]) / 24) 
     
     # Add noise to flux
-    sigma = 1.6e-4
+    sigma = 1.6e-3
     flux = flux_true + sigma * np.random.randn(len(t))
     
     # Append to full_flux and full_time

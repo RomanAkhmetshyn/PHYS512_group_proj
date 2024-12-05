@@ -51,75 +51,77 @@ def chisq(pars, data, t, Ninv):
     return chisq
 
 
-# def run_chain(pars, fun, data, t, Ninv, L, nsamp=100):
-#     chisq = np.zeros(nsamp)
-#     npar = len(pars)
-#     chain = np.zeros([nsamp, npar])
-#     chain[0, :] = pars
-#     chisq[0] = fun(pars, data, t, Ninv)
-#     for i in trange(1, nsamp):
-#         # pnew = chain[i-1, :]+L@np.random.randn(npar)
-#         pnew = chain[i-1, :]+L*np.random.randn(npar)
-#         chi_new = fun(pnew, data, t, Ninv)
-#         prob = np.exp(0.5*(chisq[i-1]-chi_new))
-#         # accept if a random number is less than this
-#         if np.random.rand(1)[0] < prob:
-#             chain[i, :] = pnew
-#             chisq[i] = chi_new
-#         else:
-#             chain[i, :] = chain[i-1, :]
-#             chisq[i] = chisq[i-1]
-#     return chain, chisq
-
-def run_chain(pars, fun, data, t, Ninv, L, nsamp=100, adapt_steps=100, target_acceptance=0.25):
+def run_chain(pars, fun, data, t, Ninv, L, nsamp=100):
     chisq = np.zeros(nsamp)
     npar = len(pars)
     chain = np.zeros([nsamp, npar])
     chain[0, :] = pars
     chisq[0] = fun(pars, data, t, Ninv)
-    acceptance_count = 0  # Track acceptance count
-    step_size = L  # Initialize step size
-
     for i in trange(1, nsamp):
-        pnew = chain[i - 1, :] + step_size * np.random.randn(npar)
+        # pnew = chain[i-1, :]+L@np.random.randn(npar)
+        pnew = chain[i-1, :]+L*np.random.randn(npar)
         chi_new = fun(pnew, data, t, Ninv)
-        prob = np.exp(0.5 * (chisq[i - 1] - chi_new))
-
-        if np.random.rand() < prob:  # Accept step
+        prob = np.exp(0.5*(chisq[i-1]-chi_new))
+        # accept if a random number is less than this
+        if np.random.rand(1)[0] < prob:
             chain[i, :] = pnew
             chisq[i] = chi_new
-            acceptance_count += 1
-        else:  # Reject step
-            chain[i, :] = chain[i - 1, :]
-            chisq[i] = chisq[i - 1]
-
-        # Adjust step size every `adapt_steps` iterations
-        if i % adapt_steps == 0:
-            acceptance_rate = acceptance_count / adapt_steps
-            # print(acceptance_rate)
-            if acceptance_rate < target_acceptance:
-                step_size *= 0.1  # Decrease step size
-            elif acceptance_rate > target_acceptance:
-                step_size *= 1.9  # Increase step size
-            acceptance_count = 0  # Reset acceptance count
-
+        else:
+            chain[i, :] = chain[i-1, :]
+            chisq[i] = chisq[i-1]
     return chain, chisq
+
+# def run_chain(pars, fun, data, t, Ninv, L, nsamp=100, adapt_steps=10, target_acceptance=0.45):
+#     chisq = np.zeros(nsamp)
+#     npar = len(pars)
+#     chain = np.zeros([nsamp, npar])
+#     chain[0, :] = pars
+#     chisq[0] = fun(pars, data, t, Ninv)
+#     acceptance_count = 0  # Track acceptance count
+#     step_size = L  # Initialize step size
+
+#     for i in trange(1, nsamp):
+#         pnew = chain[i - 1, :] + step_size * np.random.randn(npar)
+#         chi_new = fun(pnew, data, t, Ninv)
+#         prob = np.exp(0.5 * (chisq[i - 1] - chi_new))
+
+#         if np.random.rand() < prob:  # Accept step
+#             chain[i, :] = pnew
+#             chisq[i] = chi_new
+#             acceptance_count += 1
+#         else:  # Reject step
+#             chain[i, :] = chain[i - 1, :]
+#             chisq[i] = chisq[i - 1]
+
+#         # Adjust step size every `adapt_steps` iterations
+#         if i % adapt_steps == 0:
+#             acceptance_rate = acceptance_count / adapt_steps
+#             # print(acceptance_rate)
+#             if acceptance_rate < target_acceptance:
+#                 step_size *= 0.5  # Decrease step size
+#             elif acceptance_rate > target_acceptance:
+#                 step_size *= 1.5  # Increase step size
+#             acceptance_count = 0  # Reset acceptance count
+
+#     return chain, chisq
 
 
 t = np.loadtxt('times.txt')
 t = t[0] / 24
 lc_observed = np.loadtxt('lightcurve.txt')
 flux = lc_observed[0]
-errs = np.zeros(len(flux))+1.6e-4
+errs = np.zeros(len(flux))+1.6e-3
 
 # set initial parameters
 titles = ['T0', 'Rp/Rs',
           'a/Rs',  'u1', 'u2']
-real = np.asarray([10/24,  0.1, 19.5177,  0.05, 0.0])
-pguess = np.asarray([0.4,  0.08, 10,  0.001, 0.001])  # input
+real = np.asarray([10/24,  0.1, 19.5177,  0.4, 0.1])
+pguess = np.asarray([0.4,  0.08, 10,  0.0, 0.0])  # input
 
 # L = pguess*[1e-2, 1e-2, 1e-2, 1e-3, 1e-3]
 L = pguess*1e-3
+L[-2] = 0.001
+L[-1] = 0.001
 # L = np.array([0.005, 0.05, 0.005, 0.005, 0.05, 0.001, 0.05, 0.005, 0.005])*1e-1
 
 
@@ -127,8 +129,8 @@ Ninv = np.diag(1/errs**2)
 
 # %%
 file = False
-nsamp = 10000
-burnin = 2000
+nsamp = 40000
+burnin = 10000
 if file:
     chain = np.genfromtxt('chains.txt')
     chainvec = np.genfromtxt('chis.txt')
@@ -177,7 +179,7 @@ print(real)
 
 # Create a corner plot
 fig = corner.corner(chain, labels=titles, truths=np.median(
-    chain, axis=0), quantiles=[0.16, 0.5, 0.84], show_titles=True)
+    chain, axis=0), quantiles=[0.16, 0.5, 0.84], show_titles=True, title_fmt='.3f', )
 
 # Show the plot
 plt.show()
