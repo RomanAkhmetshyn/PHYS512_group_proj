@@ -198,23 +198,23 @@ def twoPlanetTTV(m0=1000, m1=1, m2=1,
 
 # %%
 # Post-analysis: Observed minus Calculated (O-C) analysis
+if __name__ == "__main__":
+    start_time = time.time()
+    ts = twoPlanetTTV(m0=1, m1=0.003, m2=1,
+                      T1=10, T2=200, e1=0, e2=0.0, w1=0, w2=np.pi, Ntransits=10, savepos=True)
+    end_time = time.time()
+    print(f"Execution time: {end_time - start_time:.6f} seconds")
+    periods = np.diff(ts)
 
-start_time = time.time()
-ts = twoPlanetTTV(m0=1, m1=0.003, m2=1,
-                  T1=10, T2=200, e1=0, e2=0.0, w1=0, w2=np.pi, Ntransits=10, savepos=True)
-end_time = time.time()
-print(f"Execution time: {end_time - start_time:.6f} seconds")
-periods = np.diff(ts)
+    expected = [ts[0] + np.mean(periods) * n for n in range(len(ts))]
 
-expected = [ts[0] + np.mean(periods) * n for n in range(len(ts))]
+    OC = ts - expected
 
-OC = ts - expected
-
-plt.plot(ts, OC*24*60)
-plt.xlabel("days")
-plt.ylabel("O-C (minutes)")
-plt.title("Observed Minus Calculated Analysis")
-plt.show()
+    plt.plot(ts, OC*24*60)
+    plt.xlabel("days")
+    plt.ylabel("O-C (minutes)")
+    plt.title("Observed Minus Calculated Analysis")
+    plt.show()
 
 # plt.plot(periods)
 # plt.show()
