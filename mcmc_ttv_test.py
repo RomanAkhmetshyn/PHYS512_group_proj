@@ -110,7 +110,7 @@ errs = np.zeros(ts)+1/60
 # set initial parameters
 titles = ['Ms', 'Mp1', 'Mp2', 'Tp1', 'Tp2', 'ecc2', 'omega2']
 # real = np.asarray([1,  0.1, 19.5177,  0.4, 0.1])
-pguess = np.asarray([1,  0.001, 1,  10, 100, 0.0, np.pi])  # input
+pguess = np.asarray([1,  0.001, 1,  11, 70, 0.02, np.pi])  # input
 
 # L = pguess*[1e-2, 1e-2, 1e-2, 1e-3, 1e-3]
 L = pguess*1e-3
@@ -123,7 +123,7 @@ Ninv = np.diag(1/errs**2)
 
 # %%
 file = False
-nsamp = 500
+nsamp = 1000
 burnin = 0
 if file:
     chain = np.genfromtxt('chains.txt')
