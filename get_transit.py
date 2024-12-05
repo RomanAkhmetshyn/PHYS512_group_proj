@@ -24,7 +24,7 @@ A = dict(
     r=1,  #  radius in R_sun
     m=1,  # mass in M_sun
     prot=10,  # rotational period in days
-    u=[0.05, 0.00],  # limb darkening coefficients
+    u=[0.4, 0.1],  # limb darkening coefficients
     y=A_y,  # the spherical harmonic coefficients
 )
 
