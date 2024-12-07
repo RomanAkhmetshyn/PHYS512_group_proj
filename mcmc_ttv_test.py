@@ -11,19 +11,22 @@ mpl.rcParams['figure.dpi'] = 300
 
 np.random.seed(42)
 
+global Ms
+Ms = 1
+
 
 def get_oc(pars, ts):
     pars = np.array(pars, dtype=float)
 
-    m0 = pars[0]
-    m1 = pars[1]
-    m2 = pars[2]
-    T1 = pars[3]
-    T2 = pars[4]
+    m0 = Ms
+    m1 = pars[0]
+    m2 = pars[1]
+    T1 = pars[2]
+    T2 = pars[3]
     e1 = 0
-    e2 = pars[5]
+    e2 = pars[4]
     w1 = 0
-    w2 = pars[6]
+    w2 = pars[5]
 
     ts = twoPlanetTTV(m0, m1, m2,
                       T1, T2, e1, e2, w1, w2, Ntransits=ts, savepos=False)
@@ -39,8 +42,8 @@ def get_oc(pars, ts):
 
 def chisq(pars, data, ts, Ninv):
 
-    if pars[5] < 0:
-        return np.inf
+    # if any(pars) < 0:
+    #     return np.inf
 
     y = get_oc(pars, ts)
     r = data-y
@@ -60,7 +63,7 @@ def run_chain(pars, fun, data, ts, Ninv, L, nsamp=100):
         chi_new = fun(pnew, data, ts, Ninv)
         prob = np.exp(0.5*(chisq[i-1]-chi_new))
         # accept if a random number is less than this
-        if np.random.rand(1)[0] < prob:
+        if (np.random.rand(1)[0] < prob and any(pnew) >= 0):
             chain[i, :] = pnew
             chisq[i] = chi_new
         else:
@@ -68,7 +71,7 @@ def run_chain(pars, fun, data, ts, Ninv, L, nsamp=100):
             chisq[i] = chisq[i-1]
     return chain, chisq
 
-# def run_chain(pars, fun, data, ts, Ninv, L, nsamp=100, adapt_steps=10, target_acceptance=0.25):
+# def run_chain(pars, fun, data, ts, Ninv, L, nsamp=100, adapt_steps=10, target_acceptance=0.20):
 #     chisq = np.zeros(nsamp)
 #     npar = len(pars)
 #     chain = np.zeros([nsamp, npar])
@@ -82,7 +85,7 @@ def run_chain(pars, fun, data, ts, Ninv, L, nsamp=100):
 #         chi_new = fun(pnew, data, ts, Ninv)
 #         prob = np.exp(0.5 * (chisq[i - 1] - chi_new))
 
-#         if np.random.rand() < prob:  # Accept step
+#         if (np.random.rand(1)[0] < prob and any(pnew) >= 0):  # Accept step
 #             chain[i, :] = pnew
 #             chisq[i] = chi_new
 #             acceptance_count += 1
@@ -108,13 +111,12 @@ ts = len(data)
 errs = np.zeros(ts)+1/60
 
 # set initial parameters
-titles = ['Ms', 'Mp1', 'Mp2', 'Tp1', 'Tp2', 'ecc2', 'omega2']
+titles = ['Mp1', 'Mp2', 'Tp1', 'Tp2', 'ecc2', 'omega2']
 # real = np.asarray([1,  0.1, 19.5177,  0.4, 0.1])
-pguess = np.asarray([1,  0.001, 1,  11, 70, 0.02, np.pi])  # input
+pguess = np.asarray([1, 1,  10, 100, 0.01, np.pi])  # input
 
 # L = pguess*[1e-2, 1e-2, 1e-2, 1e-3, 1e-3]
-L = pguess*1e-3
-L[-2] = 0.001
+L = pguess*1e-2
 
 # L = np.array([0.005, 0.05, 0.005, 0.005, 0.05, 0.001, 0.05, 0.005, 0.005])*1e-1
 

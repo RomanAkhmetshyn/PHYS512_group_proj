@@ -184,8 +184,8 @@ def twoPlanetTTV(m0=1000, m1=1, m2=1,
             trans += 1
 
         # E_total = compute_total_energy(x0, y0, vx0, vy0, m0,
-        #                                x1, y1, vx1, vy1, m1,
-        #                                x2, y2, vx2, vy2, m2, G)
+        #                                 x1, y1, vx1, vy1, m1,
+        #                                 x2, y2, vx2, vy2, m2, G)
         # energies.append(E_total)
 
     # if savepos:
@@ -200,8 +200,8 @@ def twoPlanetTTV(m0=1000, m1=1, m2=1,
 # Post-analysis: Observed minus Calculated (O-C) analysis
 if __name__ == "__main__":
     start_time = time.time()
-    ts = twoPlanetTTV(m0=1, m1=0.003, m2=1,
-                      T1=10, T2=200, e1=0, e2=0.0, w1=0, w2=np.pi, Ntransits=10, savepos=True)
+    ts = twoPlanetTTV(m0=1, m1=1, m2=3,
+                      T1=10, T2=160, e1=0, e2=0.0, w1=0, w2=np.pi/6, Ntransits=10, savepos=True)
     end_time = time.time()
     print(f"Execution time: {end_time - start_time:.6f} seconds")
     periods = np.diff(ts)
@@ -215,6 +215,8 @@ if __name__ == "__main__":
     plt.ylabel("O-C (minutes)")
     plt.title("Observed Minus Calculated Analysis")
     plt.show()
+
+    np.savetxt('observed_OC(mins).txt', OC*24*60)
 
 # plt.plot(periods)
 # plt.show()
