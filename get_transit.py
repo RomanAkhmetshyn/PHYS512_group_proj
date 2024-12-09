@@ -35,8 +35,8 @@ B = dict(
     inc=90,
     # amp=0.0165,  # amplitude (a value prop. to luminosity)
     amp=0,  # amplitude (a value prop. to luminosity)
-    r=0.1,  #  radius in R_sun
-    m=0.001,  #  mass in M_sun
+    r=0.01,  #  radius in R_sun
+    m=0.01,  #  mass in M_sun
     porb=10,  # orbital period in days
     # prot=0.1,  # rotational period in days
     prot=9,
@@ -81,31 +81,27 @@ sys = starry.System(pri, sec)
 full_flux = []
 full_time = []
 
-rots = 10
+rots = 20
+TTV = np.genfromtxt('observed_OC(mins).txt')/60
 
 pred = [10+rot*10*24 for rot in range(0,rots)]
 
-amplitude = 0.2  # Amplitude of TTV in hours
-period = 8  # Period of TTV in number of transits
-TTV = amplitude * np.sin(2 * np.pi * np.arange(rots) / period)
-
-plt.plot(np.arange(rots), TTV*60)
+plt.plot(np.arange(rots), TTV)
 plt.show()
 
-np.savetxt('observed_OC(mins).txt', TTV*60)
 
 pred_with_TTV = pred + TTV * 24  # Convert TTV from hours to the same time unit as pred
 
 # Simulate and plot data
 for rot in range(rots):
     # Generate time array for the current rotation
-    t = np.linspace(5 + rot * 10 * 24, 15 + rot * 10 * 24, 1000)
+    t = np.linspace(5 + rot * 10 * 24, 15 + rot * 10 * 24, 500)
     
     # Simulate true flux
     flux_true = sys.flux((t - TTV[rot]) / 24) 
     
     # Add noise to flux
-    sigma = 1.6e-3
+    sigma = 1.0e-3
     flux = flux_true + sigma * np.random.randn(len(t))
     
     # Append to full_flux and full_time
@@ -114,12 +110,13 @@ for rot in range(rots):
     
     # Plot the results for each rotation
     fig, ax = plt.subplots(1, figsize=(12, 5))  
-    ax.vlines(pred[rot], 0.989, 1.005, linestyle='--', color='r', label="TTV mid-transit")
-    ax.vlines(pred[rot]+TTV[rot], 0.989, 1.005, linestyle='--', color='g', label="TTV mid-transit")
+    ax.vlines(pred[rot], 0.985, 1.005, linestyle='--', color='r', label="TTV mid-transit")
+    ax.vlines(pred[rot]+TTV[rot], 0.985, 1.005, linestyle='--', color='g', label="TTV mid-transit")
     ax.plot(t, flux, "k.", alpha=0.3, ms=2, label="Observed Flux")
     ax.plot(t, flux_true, lw=1, label="True Flux")
     ax.set_xlabel("Time [hours]", fontsize=16)
     ax.set_ylabel("Normalized Flux", fontsize=16)
+    ax.set_ylim(0.996, 1.005)
     ax.legend()
     plt.show()
 
