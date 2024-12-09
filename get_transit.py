@@ -35,8 +35,8 @@ B = dict(
     inc=90,
     # amp=0.0165,  # amplitude (a value prop. to luminosity)
     amp=0,  # amplitude (a value prop. to luminosity)
-    r=0.01,  #  radius in R_sun
-    m=0.01,  #  mass in M_sun
+    r=0.1,  #  radius in R_sun
+    m=0.001,  #  mass in M_sun
     porb=10,  # orbital period in days
     # prot=0.1,  # rotational period in days
     prot=9,
@@ -86,11 +86,8 @@ TTV = np.genfromtxt('observed_OC(mins).txt')/60
 
 pred = [10+rot*10*24 for rot in range(0,rots)]
 
-plt.plot(np.arange(rots), TTV)
+plt.plot(np.arange(rots), TTV*60)
 plt.show()
-
-
-pred_with_TTV = pred + TTV * 24  # Convert TTV from hours to the same time unit as pred
 
 # Simulate and plot data
 for rot in range(rots):
@@ -116,7 +113,7 @@ for rot in range(rots):
     ax.plot(t, flux_true, lw=1, label="True Flux")
     ax.set_xlabel("Time [hours]", fontsize=16)
     ax.set_ylabel("Normalized Flux", fontsize=16)
-    ax.set_ylim(0.996, 1.005)
+    ax.set_ylim(0.985, 1.005)
     ax.legend()
     plt.show()
 
@@ -138,10 +135,10 @@ plt.figure(figsize=(12, 8))
 for i, flux in enumerate(full_flux):
     plt.plot(full_time[0]-10, flux + i * offset_step, 'k.', ms=2)  # Add offset
 
-plt.vlines(0, 0.98, 1.15, linestyle='--', color='r', label="expected mid-transit")
+plt.vlines(0, 0.98, 1.32, linestyle='--', color='r', label="expected mid-transit")
 # Add labels and legend
 
-plt.ylim(0.98, 1.147)
+plt.ylim(0.98, 1.32)
 plt.xlabel("Time [hours]", fontsize=14)
 plt.ylabel("Normalized Flux + Offset", fontsize=14)
 plt.legend(fontsize=10, loc='upper right', ncol=2)  # Adjust legend position as needed
