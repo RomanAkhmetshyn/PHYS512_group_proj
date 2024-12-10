@@ -82,43 +82,26 @@ def kepler_to_cartesian(T, e, omega, G, M_central):
 
 @nb.njit(parallel=False)
 def twoPlanetTTV(m0=1000, m1=1, m2=1,
-                 T1=10, T2=100, e1=0, e2=0, w1=0, w2=0, Ntransits=10, savepos=True):
+                 T1=10, T2=100, e1=0, e2=0, w1=0, w2=0, Ntransits=10):
 
     m0 = m0*1047
-
-    # Initial conditions for three particles (in A.U. and A.U./year)
-    x0, y0, vx0, vy0 = 0, 0, 0, 0  # Particle 0
+    x0, y0, vx0, vy0 = 0, 0, 0, 0
 
     x1, y1, vx1, vy1 = kepler_to_cartesian(T1, e1, w1, G, m0)
     x2, y2, vx2, vy2 = kepler_to_cartesian(T2, e2, w2, G, m0)
 
-    # Simulation parameters
-    dt = 0.0001  # Time step in days
+    dt = 0.001  # Time step in days
     tmax = T1*Ntransits  # Total simulation time in days
-    # dprint = 365 * 2  # Number of sub-steps for smooth plotting
-    # dt = dt / dprint
 
-    # Arrays for tracking positions and detecting transits
-    num_steps = len(np.arange(0, tmax, dt)) + 1
-    xs = np.zeros(len(np.arange(0, tmax, dt)) + 1)
+    times = np.arange(0, tmax, dt)
+
+    num_steps = len(times) + 1
+    xs = np.zeros(num_steps)
     xs[0] = x1
     ts = np.zeros(Ntransits)  # Time of transits
     trans = 0
 
-    # if savepos:
-
-    #     positions_0 = np.zeros((num_steps, 2))  # Particle 0 (x, y)
-    #     positions_1 = np.zeros((num_steps, 2))  # Particle 1 (x, y)
-    #     positions_2 = np.zeros((num_steps, 2))  # Particle 2 (x, y)
-
-    #     positions_0[0] = [x0, y0]
-    #     positions_1[0] = [x1, y1]
-    #     positions_2[0] = [x2, y2]
-
-    # energies = []
-
-    for i, t in enumerate(np.arange(0, tmax, dt)):
-        # Calculate distances and forces
+    for i, t in enumerate(times):
         # Particle 0 and Particle 1
         dx01 = x0 - x1
         dy01 = y0 - y1
@@ -152,7 +135,7 @@ def twoPlanetTTV(m0=1000, m1=1, m2=1,
         fx2 = -G * m0 * m2 * dx02 / r02_cubed - G * m1 * m2 * dx12 / r12_cubed
         fy2 = -G * m0 * m2 * dy02 / r02_cubed - G * m1 * m2 * dy12 / r12_cubed
 
-        # Update velocities
+        # velocities
         vx0 += -dt * fx0 / m0
         vy0 += -dt * fy0 / m0
         vx1 += -dt * fx1 / m1
@@ -160,7 +143,7 @@ def twoPlanetTTV(m0=1000, m1=1, m2=1,
         vx2 += -dt * fx2 / m2
         vy2 += -dt * fy2 / m2
 
-        # Update positions
+        # positions
         x0 += dt * vx0
         y0 += dt * vy0
         x1 += dt * vx1
@@ -173,25 +156,10 @@ def twoPlanetTTV(m0=1000, m1=1, m2=1,
 
         xs[i + 1] = x1
 
-        # if savepos:
-        #     positions_0[i + 1] = [x0, y0]
-        #     positions_1[i + 1] = [x1, y1]
-        #     positions_2[i + 1] = [x2, y2]
-
         # Detect transits
         if y1 < 0 and xs[i] < 0 and xs[i + 1] > 0:
-            ts[trans] = t
+            ts[trans] = (times[i-1] + times[i]) / 2
             trans += 1
-
-        # E_total = compute_total_energy(x0, y0, vx0, vy0, m0,
-        #                                 x1, y1, vx1, vy1, m1,
-        #                                 x2, y2, vx2, vy2, m2, G)
-        # energies.append(E_total)
-
-    # if savepos:
-    #     np.save("positions_0.npy", positions_0)
-    #     np.save("positions_1.npy", positions_1)
-    #     np.save("positions_2.npy", positions_2)
 
     return ts
 
