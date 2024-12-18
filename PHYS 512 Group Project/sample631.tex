@@ -367,6 +367,26 @@ All the results and discussions are demonstrated in \texttt{Jupyter Notebooks} a
 \begin{enumerate}
     \item Part I: \texttt{N-body part.ipynb}
     \item Part II: \texttt{Transit part.ipynb}
+    Analysis of results:
+    For the single-planet transit, we initially fit for T, Rp/Rs, a/Rs, and the limb darkening coefficients. As evidenced by the trace plots, our MCMC converged around the true parameter values:
+    
+    Table: 
+    Initial Guess: [0.4,          0.08,      10,            0.0,          0.0] 
+    Best-fit:         [ 0.41738  0.10071 19.63941  0.36258  0.152  ]
+    True:              [ 0.41667  0.1          19.5177    0.4           0.1    ]
+    
+    
+    The first three parameters converged quickly—within just 2000 steps. However, we nonetheless used substantial burn-in in order to account for the fact that the limb darkening coefficients were a bit harder to constrain and not as well converged. The convergence of all parameters is shown in the trace plots.
+
+The corner plots—which show distributions for each parameter along the diagonal and the covariances between them underneath—also indicate a strong fit. The generally circular nature of the covariances implies that the parameters are uncorrelated. This is good because when parameters are uncorrelated, MCMC sampling is more efficient and more capable of exploring the parameter space adequately.
+
+Yet, most importantly, to assess the strength of any fit the chi-squared value is the best indicator. The goodness of fit test involves dividing the chi-squared value by the degrees of freedom (defined as len(resid)-len(pars) as we saw in HW #4). The "goodness" is based on how close that ratio is to 1. In our case, given the above noted definition, there were 495 degrees of freedom for a chi-squared value of 483.8. Their ratio chisq/(d.o.f) is .98 indicating a very good fit.
+
+The plot titled “ ,” allows us to visualize the strength of this fit, as it is shown that the blue batman lightcurve aligns exactly with the observed lightcurve in black.
+
+One more thing we would like to note is the incorporation of a step size adjustment section in our mcmc chain function. This involved utilizing a variable named ‘adapt_steps,’ which we arbitrarily set to 10 for our run. Every 10 samples we adjusted the step size to improve the acceptance rate of our parameters and chi-squared values. If the acceptance rate was lower than the target rate, we halved the step size so that the parameter space would be explored more thoroughly. Conversely, if the acceptance rate was too large (i.e., above the target) we increased the step size. The inclusion of this block of code made our mcmc dynamic, as it was constantly improving its sampling.  
+ 
+    
     \item Part III: \texttt{TTV part.ipynb}
 \end{enumerate}
 
